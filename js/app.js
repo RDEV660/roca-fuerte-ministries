@@ -1,42 +1,67 @@
 /**
  * ROCA FUERTE MINISTRIES & ACADEMY
- * Clean Static Website Engine
+ * Clean Static Website Engine with Automatic System Language Detection
  */
+
+// Detect system/browser language
+function detectSystemLanguage() {
+  // 1. Check if user already manually selected a preferred language
+  const saved = localStorage.getItem("rf_lang");
+  if (saved === "es" || saved === "en") {
+    return saved;
+  }
+
+  // 2. Inspect browser languages list (e.g. ['es-US', 'es', 'en'])
+  const languages = navigator.languages || [navigator.language || navigator.userLanguage || "en"];
+  for (let i = 0; i < languages.length; i++) {
+    const l = (languages[i] || "").toLowerCase();
+    if (l.startsWith("es")) {
+      return "es";
+    }
+  }
+
+  // 3. Default to English for English/other system locales
+  return "en";
+}
 
 // Global Language Switcher
 window.setLang = function(lang) {
-  if (lang !== "es" && lang !== "en") lang = "en";
+  if (lang !== "es" && lang !== "en") {
+    lang = "en";
+  }
+
+  // Save preference
   localStorage.setItem("rf_lang", lang);
 
+  // Update HTML lang attribute
+  document.documentElement.lang = lang;
+
+  // Update active state on toggle buttons
   document.querySelectorAll(".lang-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+    const btnLang = btn.getAttribute("data-lang");
+    btn.classList.toggle("active", btnLang === lang);
   });
 
-  const dict = translations[lang];
+  // Apply translations to all matching elements
+  const dict = (typeof translations !== "undefined") ? translations[lang] : null;
   if (!dict) return;
+
+  // Update Title & Meta Description
+  if (dict.pageTitle) {
+    document.title = dict.pageTitle;
+  }
 
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
-    if (dict[key]) {
+    if (dict[key] !== undefined) {
       el.innerHTML = dict[key];
     }
   });
-
-  document.documentElement.lang = lang;
 };
 
-function getActiveLang() {
-  const saved = localStorage.getItem("rf_lang");
-  if (saved) return saved;
-  if (navigator.language && navigator.language.toLowerCase().startsWith("es")) {
-    return "es";
-  }
-  return "en"; // Default to English
-}
-
+// Initialize immediately on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
-  // Set default language
-  const initialLang = getActiveLang();
+  const initialLang = detectSystemLanguage();
   setLang(initialLang);
 
   // Setup click listeners for language buttons
@@ -48,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Mobile Navigation Toggle
+  // Mobile Navigation Drawer Toggle
   const mobileToggle = document.getElementById("mobileMenuBtn");
   const navMenu = document.getElementById("navMenu");
   if (mobileToggle && navMenu) {
