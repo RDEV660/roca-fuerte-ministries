@@ -1,0 +1,14 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Development / Local Server
+server.ps1
+*.log
+
+# Editor / IDE
+.vscode/
+.idea/
+*.suo
+*.user
