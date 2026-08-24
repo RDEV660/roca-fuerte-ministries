@@ -1,6 +1,6 @@
 /**
  * ROCA FUERTE MINISTRIES & ACADEMY
- * Clean Static Website Engine with Automatic System Language Detection
+ * Clean Static Website Engine with Automatic System Language Detection & Mobile Menu
  */
 
 // Detect system/browser language
@@ -20,7 +20,7 @@ function detectSystemLanguage() {
     }
   }
 
-  // 3. Default to English for English/other system locales
+  // 3. Default to English for other locales
   return "en";
 }
 
@@ -46,7 +46,7 @@ window.setLang = function(lang) {
   const dict = (typeof translations !== "undefined") ? translations[lang] : null;
   if (!dict) return;
 
-  // Update Title & Meta Description
+  // Update Title
   if (dict.pageTitle) {
     document.title = dict.pageTitle;
   }
@@ -76,15 +76,47 @@ document.addEventListener("DOMContentLoaded", () => {
   // Mobile Navigation Drawer Toggle
   const mobileToggle = document.getElementById("mobileMenuBtn");
   const navMenu = document.getElementById("navMenu");
+
   if (mobileToggle && navMenu) {
-    mobileToggle.addEventListener("click", () => {
+    mobileToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
       navMenu.classList.toggle("active");
+      const icon = mobileToggle.querySelector("i");
+      if (icon) {
+        if (navMenu.classList.contains("active")) {
+          icon.classList.remove("fa-bars");
+          icon.classList.add("fa-xmark");
+        } else {
+          icon.classList.remove("fa-xmark");
+          icon.classList.add("fa-bars");
+        }
+      }
     });
 
-    document.querySelectorAll(".nav-link").forEach(link => {
+    // Close mobile menu when clicking any navigation link
+    navMenu.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
         navMenu.classList.remove("active");
+        const icon = mobileToggle.querySelector("i");
+        if (icon) {
+          icon.classList.remove("fa-xmark");
+          icon.classList.add("fa-bars");
+        }
       });
+    });
+
+    // Close when clicking outside of the navbar
+    document.addEventListener("click", (e) => {
+      if (!navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+        if (navMenu.classList.contains("active")) {
+          navMenu.classList.remove("active");
+          const icon = mobileToggle.querySelector("i");
+          if (icon) {
+            icon.classList.remove("fa-xmark");
+            icon.classList.add("fa-bars");
+          }
+        }
+      }
     });
   }
 });
