@@ -4,7 +4,7 @@
  */
 
 // Master Administrator Password
-const ADMIN_PASSWORD = "roca2026";
+const ADMIN_PASSWORD = "Susie1028";
 
 // Detect system/browser language
 function detectSystemLanguage() {
@@ -118,9 +118,9 @@ window.handleAdminUnlock = function() {
   const errMsg = document.getElementById("adminErrorMsg");
 
   if (!passInput) return;
-  const entered = (passInput.value || "").trim().toLowerCase();
+  const entered = (passInput.value || "").trim();
 
-  if (entered === ADMIN_PASSWORD || entered === "rocafuerte" || entered === "roca") {
+  if (entered === "Susie1028" || entered.toLowerCase() === "susie1028") {
     if (authBox) authBox.style.display = "none";
     if (dashboard) dashboard.style.display = "flex";
     if (errMsg) errMsg.style.display = "none";
