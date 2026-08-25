@@ -199,7 +199,7 @@ const translations = {
     contactCallNow: "<i class='fa-solid fa-phone'></i> Call (956) 360-5764",
 
     // Image Control Admin Modal
-    adminModalTitle: "Image & Media Control Panel",
+    adminModalTitle: "User Login & Image Control",
     adminModalSubtitle: "Authorized Church Administrator Access",
     adminPassPrompt: "Enter Administrator Password:",
     adminUnlockBtn: "Unlock Control Panel",
@@ -222,7 +222,7 @@ const translations = {
     footerRights: "© 2026 Roca Fuerte Ministries and Academy. All rights reserved.",
     footerNonprofitClaim: "501(c)(3) Christian Organization located in Mission & Alton, Texas.",
     footerVerseRef: "Psalm 62:7 | Mission, TX",
-    footerAdminBtn: "<i class='fa-solid fa-lock'></i> Image Control"
+    footerAdminBtn: "<i class='fa-solid fa-lock'></i> User / Admin Login"
   },
 
   es: {
@@ -425,7 +425,7 @@ const translations = {
     contactCallNow: "<i class='fa-solid fa-phone'></i> Llamar: (956) 360-5764",
 
     // Image Control Admin Modal
-    adminModalTitle: "Panel de Control de Imágenes",
+    adminModalTitle: "Acceso de Usuario y Control de Fotos",
     adminModalSubtitle: "Acceso Exclusivo para Administradores de la Iglesia",
     adminPassPrompt: "Ingresar Contraseña de Administrador:",
     adminUnlockBtn: "Desbloquear Panel",
@@ -448,6 +448,6 @@ const translations = {
     footerRights: "© 2026 Roca Fuerte Ministries and Academy. Todos los derechos reservados.",
     footerNonprofitClaim: "Organización Cristiana 501(c)(3) ubicada en Mission y Alton, Texas.",
     footerVerseRef: "Salmo 62:7 | Mission, TX",
-    footerAdminBtn: "<i class='fa-solid fa-lock'></i> Control de Imágenes"
+    footerAdminBtn: "<i class='fa-solid fa-lock'></i> Acceso Usuario / Administrador"
   }
 };

@@ -1,6 +1,6 @@
 /**
  * ROCA FUERTE MINISTRIES & ACADEMY
- * Clean Static Website Engine with Language Detection & Image Manager
+ * Clean Static Website Engine with Language Detection & User Login/Image Manager
  */
 
 // Master Administrator Password
@@ -82,6 +82,55 @@ window.copyText = function(text, btnElement) {
   }
 };
 
+// Open Admin / User Login Modal
+window.openAdminModalFunc = function() {
+  const modal = document.getElementById("adminModalOverlay");
+  const authBox = document.getElementById("adminAuthBox");
+  const dashboard = document.getElementById("adminDashboard");
+  const passInput = document.getElementById("adminPasswordInput");
+  const errMsg = document.getElementById("adminErrorMsg");
+
+  if (modal) {
+    modal.classList.add("active");
+    if (authBox) authBox.style.display = "flex";
+    if (dashboard) dashboard.style.display = "none";
+    if (errMsg) errMsg.style.display = "none";
+    if (passInput) {
+      passInput.value = "";
+      setTimeout(() => {
+        passInput.focus();
+      }, 100);
+    }
+  }
+};
+
+// Close Admin / User Login Modal
+window.closeAdminModalFunc = function() {
+  const modal = document.getElementById("adminModalOverlay");
+  if (modal) modal.classList.remove("active");
+};
+
+// Unlock Admin Dashboard
+window.handleAdminUnlock = function() {
+  const passInput = document.getElementById("adminPasswordInput");
+  const authBox = document.getElementById("adminAuthBox");
+  const dashboard = document.getElementById("adminDashboard");
+  const errMsg = document.getElementById("adminErrorMsg");
+
+  if (!passInput) return;
+  const entered = (passInput.value || "").trim().toLowerCase();
+
+  if (entered === ADMIN_PASSWORD || entered === "rocafuerte" || entered === "roca") {
+    if (authBox) authBox.style.display = "none";
+    if (dashboard) dashboard.style.display = "flex";
+    if (errMsg) errMsg.style.display = "none";
+  } else {
+    if (errMsg) errMsg.style.display = "block";
+    passInput.focus();
+    passInput.select();
+  }
+};
+
 // Image Control Logic
 window.handleImageUpload = function(event, targetImgId, previewImgId, storageKey) {
   const file = event.target.files && event.target.files[0];
@@ -144,11 +193,6 @@ function loadStoredPhotos() {
   });
 }
 
-window.closeAdminModalFunc = function() {
-  const modal = document.getElementById("adminModalOverlay");
-  if (modal) modal.classList.remove("active");
-};
-
 // Initialize immediately on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
   const initialLang = detectSystemLanguage();
@@ -209,54 +253,45 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Admin Modal Handlers
+  // Admin Modal Click & Keyboard Handlers
   const openAdminBtn = document.getElementById("openAdminModal");
   const closeAdminBtn = document.getElementById("closeAdminModal");
   const adminModal = document.getElementById("adminModalOverlay");
   const adminUnlockBtn = document.getElementById("adminUnlockBtn");
   const adminPasswordInput = document.getElementById("adminPasswordInput");
-  const adminAuthBox = document.getElementById("adminAuthBox");
-  const adminDashboard = document.getElementById("adminDashboard");
-  const adminErrorMsg = document.getElementById("adminErrorMsg");
 
-  if (openAdminBtn && adminModal) {
-    openAdminBtn.addEventListener("click", () => {
-      adminModal.classList.add("active");
-      if (adminPasswordInput) {
-        adminPasswordInput.value = "";
-        adminPasswordInput.focus();
-      }
-      if (adminErrorMsg) adminErrorMsg.style.display = "none";
-    });
+  if (openAdminBtn) {
+    openAdminBtn.addEventListener("click", window.openAdminModalFunc);
   }
 
-  if (closeAdminBtn && adminModal) {
-    closeAdminBtn.addEventListener("click", closeAdminModalFunc);
+  if (closeAdminBtn) {
+    closeAdminBtn.addEventListener("click", window.closeAdminModalFunc);
   }
 
   if (adminModal) {
     adminModal.addEventListener("click", (e) => {
       if (e.target === adminModal) {
-        closeAdminModalFunc();
+        window.closeAdminModalFunc();
       }
     });
   }
 
-  if (adminUnlockBtn && adminPasswordInput) {
-    const handleUnlock = () => {
-      const entered = (adminPasswordInput.value || "").trim().toLowerCase();
-      if (entered === ADMIN_PASSWORD || entered === "rocafuerte" || entered === "roca") {
-        if (adminAuthBox) adminAuthBox.style.display = "none";
-        if (adminDashboard) adminDashboard.style.display = "flex";
-        if (adminErrorMsg) adminErrorMsg.style.display = "none";
-      } else {
-        if (adminErrorMsg) adminErrorMsg.style.display = "block";
-      }
-    };
+  if (adminUnlockBtn) {
+    adminUnlockBtn.addEventListener("click", window.handleAdminUnlock);
+  }
 
-    adminUnlockBtn.addEventListener("click", handleUnlock);
+  if (adminPasswordInput) {
     adminPasswordInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") handleUnlock();
+      if (e.key === "Enter") {
+        window.handleAdminUnlock();
+      }
     });
   }
+
+  // ESC key closes modals
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      window.closeAdminModalFunc();
+    }
+  });
 });
