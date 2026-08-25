@@ -1,7 +1,19 @@
+const svgIcons = {
+  directions: `<svg class="icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  clock: `<svg class="icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  heart: `<svg class="icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
+  phone: `<svg class="icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-2.2 2.2a15.05 15.05 0 01-6.59-6.59l2.2-2.21a.96.96 0 00.25-1A11.36 11.36 0 018.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-.99-1.12z"/></svg>`,
+  lock: `<svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`,
+  church: `<svg class="icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 2l-1 2H9v2h2v3H8l-6 5v8h8v-5h4v5h8v-8l-6-5h-3V7h2V5h-2L12 2z"/></svg>`,
+  gradCap: `<svg class="icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>`,
+  userTie: `<svg class="icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 2a5 5 0 105 5 5 5 0 00-5-5zm0 12c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5z"/></svg>`,
+  handHeart: `<svg class="icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+};
+
 const translations = {
   en: {
     // Page metadata
-    pageTitle: "Roca Fuerte Ministries and Academy | Mission, TX",
+    pageTitle: "RF Ministries and Academy | Mission, TX",
 
     // Navigation
     navHome: "Home",
@@ -12,22 +24,22 @@ const translations = {
     navGive: "Giving",
     navLocation: "Visiting Guide",
     navContact: "Contact",
-    navGetDirections: "<i class='fa-solid fa-diamond-turn-right'></i> Get Directions",
+    navGetDirections: `${svgIcons.directions} Get Directions`,
     
     // Top Bar
-    topAddress: "<i class='fa-solid fa-location-dot text-gold'></i> 10501 N Mayberry Rd, Mission, TX 78573",
+    topAddress: `${svgIcons.directions} 10501 N Mayberry Rd, Mission, TX 78573`,
     topCall: "Call Us: (956) 360-5764",
 
     // Hero Section
-    heroBadge: "<i class='fa-solid fa-church'></i> Welcome to Roca Fuerte",
+    heroBadge: `${svgIcons.church} Welcome to RF Ministries`,
     heroTitle: "A Sanctuary of <span class='text-gold'>Faith, Refuge</span> & Spiritual Power",
     heroVerse: "“My salvation and my honor depend on God; He is my mighty rock, my refuge.”",
     heroVerseRef: "— Psalm 62:7",
     heroSub: "A vibrant, welcoming Christian church in Mission, Texas. Join our English Service Sundays at 10:00 AM or Spanish Service Sundays at 11:30 AM.",
-    heroDirectionsBtn: "<i class='fa-solid fa-diamond-turn-right'></i> Get Directions",
-    heroScheduleBtn: "<i class='fa-solid fa-clock'></i> Service Times",
-    heroGiveBtn: "<i class='fa-solid fa-heart'></i> Support / Donate",
-    heroCallBtn: "<i class='fa-solid fa-phone'></i> Call (956) 360-5764",
+    heroDirectionsBtn: `${svgIcons.directions} Get Directions`,
+    heroScheduleBtn: `${svgIcons.clock} Service Times`,
+    heroGiveBtn: `${svgIcons.heart} Support / Donate`,
+    heroCallBtn: `${svgIcons.phone} Call (956) 360-5764`,
 
     // Quick Stats Bar
     statLocation: "Mission & Alton, TX",
@@ -60,14 +72,14 @@ const translations = {
     satTitle: "Universidad de Teología & Training",
     satTime: "Special Courses & Saturdays",
     satDesc: "Higher theological education, leadership certifications, and ministry activation courses.",
-    satInfoBtn: "<i class='fa-solid fa-phone'></i> Info: (956) 360-5764",
+    satInfoBtn: `${svgIcons.phone} Info: (956) 360-5764`,
 
     // About Section
     aboutSectionTag: "About Our House",
     aboutTitle: "Built Upon the Unshakable Rock",
-    aboutVerseCardTitle: "<i class='fa-solid fa-shield-halved text-gold'></i> Psalm 62:7",
+    aboutVerseCardTitle: "Psalm 62:7",
     aboutVerseCardText: "“My salvation and my honor depend on God; He is my mighty rock, my refuge.”",
-    aboutP1: "Roca Fuerte Ministries and Academy was established with a clear mandate: to be a spiritual refuge, a place of healing, and a foundation of faith in Mission, Alton, and throughout Hidalgo County.",
+    aboutP1: "RF Ministries and Academy was established with a clear mandate: to be a spiritual refuge, a place of healing, and a foundation of faith in Mission, Alton, and throughout Hidalgo County.",
     aboutP2: "We are passionate about sharing the Gospel of Jesus Christ, raising empowered disciples through Universidad de Teología and Academia de Líderes, and serving our community with action.",
     
     pillar1Title: "Passionate Worship",
@@ -79,12 +91,12 @@ const translations = {
 
     // Pastors Section
     pastorSectionTag: "Pastoral Leadership",
-    pastorBadge: "<i class='fa-solid fa-bible text-gold'></i> Ministering the Word",
+    pastorBadge: "Ministering the Word",
     pastorTitle: "Meet Our Pastors",
     pastorSubtitle: "Pastors Ricardo & Susie Valverde & Pastor Ricardo Valverde Jr.",
-    pastorBio: "With hearts centered on humility, grace, and tireless dedication to the Kingdom of God, Pastors Ricardo and Susie Valverde along with Pastor Ricardo Valverde Jr. have faithfully pastored and uplifted families across Hidalgo County. Their earnest desire is that every individual stepping into Roca Fuerte experiences God’s unconditional love, healing, and purpose.",
+    pastorBio: "With hearts centered on humility, grace, and tireless dedication to the Kingdom of God, Pastors Ricardo and Susie Valverde along with Pastor Ricardo Valverde Jr. have faithfully pastored and uplifted families across Hidalgo County. Their earnest desire is that every individual stepping into RF Ministries experiences God’s unconditional love, healing, and purpose.",
     pastorQuote: "“No matter your story or where you come from, in God’s house there is always a fresh start and a strong foundation for you.”",
-    pastorDirectionsBtn: "<i class='fa-solid fa-location-dot'></i> Visit Sanctuary",
+    pastorDirectionsBtn: `${svgIcons.directions} Visit Sanctuary`,
 
     // Ministries Section
     minSectionTag: "Our Ministries & Academy",
@@ -96,24 +108,24 @@ const translations = {
     minTheologyTag: "Biblical Higher Education",
     minTheologyDesc: "Comprehensive theological training, ministerial degrees, and deep scripture immersion to equip pastors, teachers, and kingdom leaders.",
     minTheologyInfo: "Admissions & Info: (956) 360-5764",
-    minTheologyCallBtn: "<i class='fa-solid fa-graduation-cap'></i> Inquire: (956) 360-5764",
+    minTheologyCallBtn: `${svgIcons.gradCap} Inquire: (956) 360-5764`,
 
     // Academia de Líderes
     minLeadersTitle: "Academia de Líderes",
     minLeadersTag: "Equipping Kingdom Servants",
     minLeadersDesc: "A targeted leadership academy designed to develop character, ministry competence, and spiritual discipline in emerging church leaders.",
     minLeadersInfo: "Leadership Track & Registration: (956) 360-5764",
-    minLeadersCallBtn: "<i class='fa-solid fa-user-tie'></i> Call (956) 360-5764",
+    minLeadersCallBtn: `${svgIcons.userTie} Call (956) 360-5764`,
 
     // Sergios en Acción
     minSergiosTitle: "Sergios en Acción",
     minSergiosTag: "Community Outreach & Impact",
     minSergiosDesc: "Compassionate hands-on community action: visiting families, providing benevolence relief, food distributions, and practical community support.",
     minSergiosInfo: "Outreach & Volunteer Coordination",
-    minSergiosCallBtn: "<i class='fa-solid fa-hand-holding-heart'></i> Join: (956) 360-5764",
+    minSergiosCallBtn: `${svgIcons.handHeart} Join: (956) 360-5764`,
 
     // Youth Ministry
-    minYouthTitle: "Roca Fuerte Youth",
+    minYouthTitle: "RF Youth",
     minYouthTag: "@rocafuerteyouthtx",
     minYouthDesc: "A dynamic youth movement igniting faith in teenagers and young adults through mentorship, worship, and fellowship.",
     minYouthLeaders: "Youth Leadership: Ivan Valverde, Nancy Aguilar, Seihda Valverde",
@@ -125,11 +137,11 @@ const translations = {
     minWomenQuote: "“Lives touched and transformed through the presence of God.”",
 
     // Kids Ministry
-    minKidsTitle: "Roca Kids Ministry",
+    minKidsTitle: "RF Kids Ministry",
     minKidsTag: "Nurturing Future Generations",
     minKidsDesc: "Safe, engaging, and Christ-centered biblical classes where children learn God’s Word with joy during Sunday services.",
     minKidsAges: "Sundays at 10:00 AM & 11:30 AM (Ages 2-12)",
-    minKidsVisitBtn: "<i class='fa-solid fa-location-dot'></i> Visit on Sunday",
+    minKidsVisitBtn: `${svgIcons.directions} Visit on Sunday`,
 
     // Giving Section
     giveSectionTag: "Giving & Generosity",
@@ -142,15 +154,15 @@ const translations = {
     giveZelleTitle: "Zelle",
     giveZelleDesc: "Direct bank transfer with zero fees",
     giveZelleNumber: "9563605764",
-    giveZelleAccount: "Roca Fuerte Ministries",
+    giveZelleAccount: "RF Ministries",
     giveMailTitle: "Mail a Check",
-    giveMailDesc: "Payable to Roca Fuerte Ministries and Academy",
+    giveMailDesc: "Payable to RF Ministries and Academy",
     giveMailAddr: "106 S Alton Blvd PMB 9030\nAlton, Texas 78573",
     copyBtn: "Copy",
     copiedBtn: "Copied!",
 
     // Visiting Guide
-    visitSectionTag: "Visiting Roca Fuerte",
+    visitSectionTag: "Visiting RF Ministries",
     visitTitle: "Plan to Visit Us",
     visitSubtitle: "We are located at 10501 N Mayberry Rd, Mission, TX 78573. Everyone is warmly welcome!",
     vStep1Title: "1. What to Wear?",
@@ -166,13 +178,13 @@ const translations = {
     // Testimonials
     testSectionTag: "Community Testimonies",
     testTitle: "Real Voices & Experiences",
-    testSubtitle: "What God is doing in the lives and families of Roca Fuerte.",
+    testSubtitle: "What God is doing in the lives and families of RF Ministries.",
     test1Text: "“A glorious time in the presence of God. Lives are deeply touched by the Holy Spirit. Grateful to our pastoral team for their humility and servant hearts.”",
     test1Author: "Saul Sauceda",
     test1Role: "Community Member",
     test2Text: "“It is truly beautiful to be in the house of our Heavenly Father. A church overflowing with God’s love where my entire family feels at home.”",
     test2Author: "Liliana Rodriguez",
-    test2Role: "Roca Fuerte Member",
+    test2Role: "RF Member",
     test3Text: "“Beautiful service today. With God all things are possible, without Him nothing. You feel such deep peace and presence in every worship song.”",
     test3Author: "Mary Anabel Ochoa",
     test3Role: "Congregation Member",
@@ -195,8 +207,8 @@ const translations = {
     contactRoleSeihda: "Ministry Coordinator",
     contactRolePastoral: "Pastoral & Information",
     
-    contactGetDirections: "<i class='fa-solid fa-diamond-turn-right'></i> Open in Google Maps",
-    contactCallNow: "<i class='fa-solid fa-phone'></i> Call (956) 360-5764",
+    contactGetDirections: `${svgIcons.directions} Open in Google Maps`,
+    contactCallNow: `${svgIcons.phone} Call (956) 360-5764`,
 
     // Image Control Admin Modal
     adminModalTitle: "User Login & Image Control",
@@ -219,15 +231,15 @@ const translations = {
     footerLinksTitle: "Quick Links",
     footerMinistriesTitle: "Ministries & Academies",
     footerContactTitle: "Direct Contact",
-    footerRights: "© 2026 Roca Fuerte Ministries and Academy. All rights reserved.",
+    footerRights: "© 2026 RF Ministries and Academy. All rights reserved.",
     footerNonprofitClaim: "501(c)(3) Christian Organization located in Mission & Alton, Texas.",
     footerVerseRef: "Psalm 62:7 | Mission, TX",
-    footerAdminBtn: "<i class='fa-solid fa-lock'></i> User / Admin Login"
+    footerAdminBtn: `${svgIcons.lock} User / Admin Login`
   },
 
   es: {
     // Page metadata
-    pageTitle: "Roca Fuerte Ministries and Academy | Mission, TX",
+    pageTitle: "RF Ministries and Academy | Mission, TX",
 
     // Navigation
     navHome: "Inicio",
@@ -238,22 +250,22 @@ const translations = {
     navGive: "Donaciones",
     navLocation: "Guía de Visita",
     navContact: "Contacto",
-    navGetDirections: "<i class='fa-solid fa-diamond-turn-right'></i> Cómo Llegar",
+    navGetDirections: `${svgIcons.directions} Cómo Llegar`,
     
     // Top Bar
-    topAddress: "<i class='fa-solid fa-location-dot text-gold'></i> 10501 N Mayberry Rd, Mission, TX 78573",
+    topAddress: `${svgIcons.directions} 10501 N Mayberry Rd, Mission, TX 78573`,
     topCall: "Llámanos: (956) 360-5764",
 
     // Hero Section
-    heroBadge: "<i class='fa-solid fa-church'></i> Bienvenido a Roca Fuerte",
+    heroBadge: `${svgIcons.church} Bienvenido a RF Ministries`,
     heroTitle: "Un Lugar de <span class='text-gold'>Fe, Refugio</span> y Poder Espiritual",
     heroVerse: "«En Dios está mi salvación y mi gloria; en Dios está mi roca fuerte, y mi refugio.»",
     heroVerseRef: "— Salmo 62:7",
     heroSub: "Una iglesia cristiana viva y acogedora en Mission, Texas. Acompáñanos en Inglés a las 10:00 AM o en Español a las 11:30 AM.",
-    heroDirectionsBtn: "<i class='fa-solid fa-diamond-turn-right'></i> Cómo Llegar (Maps)",
-    heroScheduleBtn: "<i class='fa-solid fa-clock'></i> Ver Horarios",
-    heroGiveBtn: "<i class='fa-solid fa-heart'></i> Sembrar / Donar",
-    heroCallBtn: "<i class='fa-solid fa-phone'></i> Llamar (956) 360-5764",
+    heroDirectionsBtn: `${svgIcons.directions} Cómo Llegar (Maps)`,
+    heroScheduleBtn: `${svgIcons.clock} Ver Horarios`,
+    heroGiveBtn: `${svgIcons.heart} Sembrar / Donar`,
+    heroCallBtn: `${svgIcons.phone} Llamar (956) 360-5764`,
 
     // Quick Stats Bar
     statLocation: "Mission y Alton, TX",
@@ -286,14 +298,14 @@ const translations = {
     satTitle: "Universidad de Teología & Cursos",
     satTime: "Cursos Especiales y Sábados",
     satDesc: "Educación teológica superior, diplomados bíblicos y capacitación ministerial para obreros del Reino.",
-    satInfoBtn: "<i class='fa-solid fa-phone'></i> Info: (956) 360-5764",
+    satInfoBtn: `${svgIcons.phone} Info: (956) 360-5764`,
 
     // About Section
     aboutSectionTag: "Sobre Nuestra Casa",
     aboutTitle: "Construidos sobre la Roca Inconmovible",
-    aboutVerseCardTitle: "<i class='fa-solid fa-shield-halved text-gold'></i> Salmo 62:7",
+    aboutVerseCardTitle: "Salmo 62:7",
     aboutVerseCardText: "«En Dios está mi salvación y mi gloria; mi roca fuerte y mi refugio.»",
-    aboutP1: "Roca Fuerte Ministries and Academy nació con una visión clara: ser una casa de refugio, sanidad y crecimiento espiritual en Mission, Alton y todo el Valle del Río Grande.",
+    aboutP1: "RF Ministries and Academy nació con una visión clara: ser una casa de refugio, sanidad y crecimiento espiritual en Mission, Alton y todo el Valle del Río Grande.",
     aboutP2: "Nos apasiona predicar el Evangelio íntegro de Jesucristo, formar siervos ungidos a través de la Universidad de Teología y Academia de Líderes, y bendecir al necesitado con Sergios en Acción.",
     
     pillar1Title: "Adoración Apasionada",
@@ -305,41 +317,41 @@ const translations = {
 
     // Pastors Section
     pastorSectionTag: "Liderazgo Pastoral",
-    pastorBadge: "<i class='fa-solid fa-bible text-gold'></i> Ministrando la Palabra",
+    pastorBadge: "Ministrando la Palabra",
     pastorTitle: "Conoce a Nuestros Pastores",
     pastorSubtitle: "Pastores Ricardo & Susie Valverde y Pastor Ricardo Valverde Jr.",
-    pastorBio: "Con un corazón lleno de humildad, amor y pasión por la obra del Señor, los Pastores Ricardo y Susie Valverde junto al Pastor Ricardo Valverde Jr. han dedicado su vida a pastorear, aconsejar y levantar familias fuertes en el Condado de Hidalgo. Su compromiso es que cada persona que cruce las puertas de Roca Fuerte se sienta bienvenida, amada y empoderada por la gracia de Dios.",
+    pastorBio: "Con un corazón lleno de humildad, amor y pasión por la obra del Señor, los Pastores Ricardo y Susie Valverde junto al Pastor Ricardo Valverde Jr. han dedicado su vida a pastorear, aconsejar y levantar familias fuertes en el Condado de Hidalgo. Su compromiso es que cada persona que cruce las puertas de RF Ministries se sienta bienvenida, amada y empoderada por la gracia de Dios.",
     pastorQuote: "«No importa tu pasado ni de dónde vengas; en la casa de Dios siempre hay un nuevo comienzo para ti y tu familia.»",
-    pastorDirectionsBtn: "<i class='fa-solid fa-location-dot'></i> Visitar Santuario",
+    pastorDirectionsBtn: `${svgIcons.directions} Visitar Santuario`,
 
     // Ministries Section
     minSectionTag: "Nuestros Ministerios y Academias",
     minTitle: "Un Lugar para Cada Miembro de la Familia",
-    minSubtitle: "Descubre dónde puedes conectarte, crecer y servir en Roca Fuerte.",
+    minSubtitle: "Descubre dónde puedes conectarte, crecer y servir en RF Ministries.",
     
     // Universidad de Teología
     minTheologyTitle: "Universidad de Teología",
     minTheologyTag: "Educación Bíblica Superior",
     minTheologyDesc: "Formación teológica completa, grados ministeriales y estudio bíblico riguroso para capacitar pastores, maestros y líderes del Reino.",
     minTheologyInfo: "Admisiones e Informes: (956) 360-5764",
-    minTheologyCallBtn: "<i class='fa-solid fa-graduation-cap'></i> Informes: (956) 360-5764",
+    minTheologyCallBtn: `${svgIcons.gradCap} Informes: (956) 360-5764`,
 
     // Academia de Líderes
     minLeadersTitle: "Academia de Líderes",
     minLeadersTag: "Capacitación de Siervos del Reino",
     minLeadersDesc: "Una academia enfocada en formar carácter, destrezas de servicio y vida espiritual en los nuevos líderes de la congregación.",
     minLeadersInfo: "Registro de Liderazgo: (956) 360-5764",
-    minLeadersCallBtn: "<i class='fa-solid fa-user-tie'></i> Llamar (956) 360-5764",
+    minLeadersCallBtn: `${svgIcons.userTie} Llamar (956) 360-5764`,
 
     // Sergios en Acción
     minSergiosTitle: "Sergios en Acción",
     minSergiosTag: "Impacto Comunitario y Ayuda",
     minSergiosDesc: "Acción social y espiritual directa: visitas a familias, entrega de despensas y provisión a los hogares más necesitados.",
     minSergiosInfo: "Coordinación de Ayuda y Voluntarios",
-    minSergiosCallBtn: "<i class='fa-solid fa-hand-holding-heart'></i> Unirse: (956) 360-5764",
+    minSergiosCallBtn: `${svgIcons.handHeart} Unirse: (956) 360-5764`,
 
     // Youth Ministry
-    minYouthTitle: "Roca Fuerte Youth",
+    minYouthTitle: "RF Youth",
     minYouthTag: "@rocafuerteyouthtx",
     minYouthDesc: "Un ministerio de jóvenes vibrante, enfocado en avivar la fe de las nuevas generaciones con devocionales, eventos y compañerismo.",
     minYouthLeaders: "Líderes: Ivan Valverde, Nancy Aguilar, Seihda Valverde",
@@ -351,11 +363,11 @@ const translations = {
     minWomenQuote: "«Vidas transformadas y tocadas por el poder del Espíritu Santo.»",
 
     // Kids Ministry
-    minKidsTitle: "Roca Kids (Infantiles)",
+    minKidsTitle: "RF Kids (Infantiles)",
     minKidsTag: "Instruyendo al Niño",
     minKidsDesc: "Clases bíblicas divertidas, seguras y llenas de enseñanzas de amor y valores cristianos para niños de todas las edades.",
     minKidsAges: "Domingos 10:00 AM y 11:30 AM (Edades 2-12)",
-    minKidsVisitBtn: "<i class='fa-solid fa-location-dot'></i> Visitar en Domingo",
+    minKidsVisitBtn: `${svgIcons.directions} Visitar en Domingo`,
 
     // Giving Section
     giveSectionTag: "Siembra y Donaciones",
@@ -368,15 +380,15 @@ const translations = {
     giveZelleTitle: "Zelle",
     giveZelleDesc: "Transferencia bancaria directa sin comisiones",
     giveZelleNumber: "9563605764",
-    giveZelleAccount: "Roca Fuerte Ministries",
+    giveZelleAccount: "RF Ministries",
     giveMailTitle: "Envío de Cheque por Correo",
-    giveMailDesc: "A nombre de Roca Fuerte Ministries and Academy",
+    giveMailDesc: "A nombre de RF Ministries and Academy",
     giveMailAddr: "106 S Alton Blvd PMB 9030\nAlton, Texas 78573",
     copyBtn: "Copiar",
     copiedBtn: "¡Copiado!",
 
     // Visiting Guide
-    visitSectionTag: "Visítanos en Roca Fuerte",
+    visitSectionTag: "Visítanos en RF Ministries",
     visitTitle: "Cómo Llegar y Qué Esperar",
     visitSubtitle: "Estamos ubicados en 10501 N Mayberry Rd, Mission, TX 78573. ¡Toda la familia es bienvenida!",
     vStep1Title: "1. ¿Cómo vestir?",
@@ -392,13 +404,13 @@ const translations = {
     // Testimonials
     testSectionTag: "Voces de Nuestra Comunidad",
     testTitle: "Testimonios y Experiencias Reales",
-    testSubtitle: "Lo que Dios está haciendo en las vidas y familias de Roca Fuerte.",
+    testSubtitle: "Lo que Dios está haciendo en las vidas y familias de RF Ministries.",
     test1Text: "«Un tiempo glorioso en la presencia de Dios. Las vidas son tocadas por el Espíritu Santo. Agradecido con nuestro equipo pastoral por su entrega y humildad.»",
     test1Author: "Saul Sauceda",
     test1Role: "Miembro de la Comunidad",
     test2Text: "«Hermoso es estar en la casa de nuestro Padre Celestial. Una iglesia llena del amor de Dios donde toda mi familia se siente bendecida.»",
     test2Author: "Liliana Rodríguez",
-    test2Role: "Comunidad Roca Fuerte",
+    test2Role: "Comunidad RF",
     test3Text: "«Hermoso servicio. Con Dios todo, sin Él absolutamente nada. Aquí se siente la paz y la unción en cada alabanza.»",
     test3Author: "Mary Anabel Ochoa",
     test3Role: "Miembro de la Congregación",
@@ -421,8 +433,8 @@ const translations = {
     contactRoleSeihda: "Coordinación Ministerial",
     contactRolePastoral: "Pastoral e Informes",
     
-    contactGetDirections: "<i class='fa-solid fa-diamond-turn-right'></i> Abrir en Google Maps",
-    contactCallNow: "<i class='fa-solid fa-phone'></i> Llamar: (956) 360-5764",
+    contactGetDirections: `${svgIcons.directions} Abrir en Google Maps`,
+    contactCallNow: `${svgIcons.phone} Llamar: (956) 360-5764`,
 
     // Image Control Admin Modal
     adminModalTitle: "Acceso de Usuario y Control de Fotos",
@@ -445,9 +457,9 @@ const translations = {
     footerLinksTitle: "Enlaces Rápidos",
     footerMinistriesTitle: "Ministerios y Academias",
     footerContactTitle: "Contacto Directo",
-    footerRights: "© 2026 Roca Fuerte Ministries and Academy. Todos los derechos reservados.",
+    footerRights: "© 2026 RF Ministries and Academy. Todos los derechos reservados.",
     footerNonprofitClaim: "Organización Cristiana 501(c)(3) ubicada en Mission y Alton, Texas.",
     footerVerseRef: "Salmo 62:7 | Mission, TX",
-    footerAdminBtn: "<i class='fa-solid fa-lock'></i> Acceso Usuario / Administrador"
+    footerAdminBtn: `${svgIcons.lock} Acceso Usuario / Administrador`
   }
 };
