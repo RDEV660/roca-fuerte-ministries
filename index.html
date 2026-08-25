@@ -557,7 +557,7 @@
           </div>
           <div style="display: flex; gap: 0.5rem; width: 100%; justify-content: center;">
             <button class="copy-btn" onclick="copyText('$rocafuerte2016', this)">
-              <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <span data-i18n="copyBtn">Copy</span>
             </button>
             <a href="https://cash.app/$rocafuerte2016" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
@@ -582,7 +582,7 @@
             RF Ministries
           </p>
           <button class="copy-btn" onclick="copyText('9563605764', this)">
-            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             <span data-i18n="copyBtn">Copy</span>
           </button>
         </div>
@@ -600,7 +600,7 @@
             <span data-i18n="giveMailAddr">106 S Alton Blvd PMB 9030<br>Alton, Texas 78573</span>
           </div>
           <button class="copy-btn" onclick="copyText('106 S Alton Blvd PMB 9030, Alton, Texas 78573', this)">
-            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             <span data-i18n="copyBtn">Copy Address</span>
           </button>
         </div>
@@ -968,6 +968,23 @@
               <input type="file" accept="image/*" onchange="handleImageUpload(event, 'imgDamas', 'previewDamas', 'rf_photo_damas')">
             </label>
           </div>
+        </div>
+
+        <!-- Global Publish Section -->
+        <div style="background: #F1F5F9; border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid #CBD5E1; margin-top: 0.5rem;">
+          <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-navy); margin-bottom: 0.25rem;">
+            🚀 Global Website Deployment (GitHub Sync)
+          </h5>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            To make your uploaded photos visible to all visitors worldwide, click "Publish Live to Website" or drop your photos in our chat.
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <input type="password" id="githubTokenInput" class="admin-pass-input" style="max-width: 280px; text-align: left; font-size: 0.85rem; padding: 0.5rem 1rem;" placeholder="GitHub Token (optional / auto)">
+            <button class="btn btn-primary btn-sm" onclick="publishPhotosToGitHub()">
+              Publish Live to Website
+            </button>
+          </div>
+          <p id="publishStatusMsg" style="font-size: 0.82rem; margin-top: 0.5rem; display: none; font-weight: 600;"></p>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 0.75rem;">

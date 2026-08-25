@@ -1,5 +1,5 @@
 /**
- * ROCA FUERTE MINISTRIES & ACADEMY
+ * RF MINISTRIES & ACADEMY
  * Clean Static Website Engine with Language Detection & User Login/Image Manager
  */
 
@@ -73,7 +73,7 @@ window.copyText = function(text, btnElement) {
 
   if (btnElement) {
     const originalHtml = btnElement.innerHTML;
-    btnElement.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+    btnElement.innerHTML = `✓ Copied!`;
     btnElement.classList.add("copied");
     setTimeout(() => {
       btnElement.innerHTML = originalHtml;
@@ -193,6 +193,98 @@ function loadStoredPhotos() {
   });
 }
 
+// Publish to GitHub via Contents API
+window.publishPhotosToGitHub = async function() {
+  const tokenInput = document.getElementById("githubTokenInput");
+  const statusMsg = document.getElementById("publishStatusMsg");
+  let token = (tokenInput ? tokenInput.value : "").trim() || localStorage.getItem("rf_gh_token");
+
+  if (!token) {
+    if (statusMsg) {
+      statusMsg.style.display = "block";
+      statusMsg.style.color = "#EF4444";
+      statusMsg.innerText = "Please enter your GitHub Personal Access Token (classic with repo scope or fine-grained).";
+    }
+    return;
+  }
+
+  localStorage.setItem("rf_gh_token", token);
+  if (statusMsg) {
+    statusMsg.style.display = "block";
+    statusMsg.style.color = "#D4AF37";
+    statusMsg.innerText = "Publishing photos to GitHub repository...";
+  }
+
+  const filesToSync = [
+    { key: "rf_photo_pastor", path: "images/pastor-susie.jpg" },
+    { key: "rf_photo_congregation", path: "images/congregation-prayer.jpg" },
+    { key: "rf_photo_youth", path: "images/youth-prayer.jpg" },
+    { key: "rf_photo_damas", path: "images/damas-prayer.jpg" }
+  ];
+
+  try {
+    let count = 0;
+    for (const item of filesToSync) {
+      const dataUrl = localStorage.getItem(item.key);
+      if (!dataUrl || !dataUrl.includes(",")) continue;
+
+      const base64Content = dataUrl.split(",")[1];
+      const apiUrl = `https://api.github.com/repos/RDEV660/roca-fuerte-ministries/contents/${item.path}`;
+
+      let sha = "";
+      try {
+        const getRes = await fetch(apiUrl, {
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: "application/vnd.github.v3+json"
+          }
+        });
+        if (getRes.ok) {
+          const fileData = await getRes.json();
+          sha = fileData.sha;
+        }
+      } catch (err) {
+        console.warn("Could not fetch file sha", err);
+      }
+
+      const body = {
+        message: `Update ${item.path} via Admin Control Panel`,
+        content: base64Content
+      };
+      if (sha) body.sha = sha;
+
+      const putRes = await fetch(apiUrl, {
+        method: "PUT",
+        headers: {
+          Authorization: `token ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/vnd.github.v3+json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (putRes.ok) {
+        count++;
+      }
+    }
+
+    if (statusMsg) {
+      if (count > 0) {
+        statusMsg.style.color = "#10B981";
+        statusMsg.innerText = `✓ Successfully published ${count} photo(s) to GitHub! Vercel is deploying the updates worldwide.`;
+      } else {
+        statusMsg.style.color = "#64748B";
+        statusMsg.innerText = "No newly uploaded photos found in storage to sync.";
+      }
+    }
+  } catch (err) {
+    if (statusMsg) {
+      statusMsg.style.color = "#EF4444";
+      statusMsg.innerText = "Error syncing to GitHub. Please check your token.";
+    }
+  }
+};
+
 // Initialize immediately on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
   const initialLang = detectSystemLanguage();
@@ -216,26 +308,11 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileToggle.addEventListener("click", (e) => {
       e.stopPropagation();
       navMenu.classList.toggle("active");
-      const icon = mobileToggle.querySelector("i");
-      if (icon) {
-        if (navMenu.classList.contains("active")) {
-          icon.classList.remove("fa-bars");
-          icon.classList.add("fa-xmark");
-        } else {
-          icon.classList.remove("fa-xmark");
-          icon.classList.add("fa-bars");
-        }
-      }
     });
 
     navMenu.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
         navMenu.classList.remove("active");
-        const icon = mobileToggle.querySelector("i");
-        if (icon) {
-          icon.classList.remove("fa-xmark");
-          icon.classList.add("fa-bars");
-        }
       });
     });
 
@@ -243,55 +320,36 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
         if (navMenu.classList.contains("active")) {
           navMenu.classList.remove("active");
-          const icon = mobileToggle.querySelector("i");
-          if (icon) {
-            icon.classList.remove("fa-xmark");
-            icon.classList.add("fa-bars");
-          }
         }
       }
     });
   }
 
-  // Admin Modal Click & Keyboard Handlers
+  // Admin Modal Handlers
   const openAdminBtn = document.getElementById("openAdminModal");
   const closeAdminBtn = document.getElementById("closeAdminModal");
   const adminModal = document.getElementById("adminModalOverlay");
   const adminUnlockBtn = document.getElementById("adminUnlockBtn");
   const adminPasswordInput = document.getElementById("adminPasswordInput");
 
-  if (openAdminBtn) {
-    openAdminBtn.addEventListener("click", window.openAdminModalFunc);
-  }
-
-  if (closeAdminBtn) {
-    closeAdminBtn.addEventListener("click", window.closeAdminModalFunc);
-  }
+  if (openAdminBtn) openAdminBtn.addEventListener("click", window.openAdminModalFunc);
+  if (closeAdminBtn) closeAdminBtn.addEventListener("click", window.closeAdminModalFunc);
 
   if (adminModal) {
     adminModal.addEventListener("click", (e) => {
-      if (e.target === adminModal) {
-        window.closeAdminModalFunc();
-      }
+      if (e.target === adminModal) window.closeAdminModalFunc();
     });
   }
 
-  if (adminUnlockBtn) {
-    adminUnlockBtn.addEventListener("click", window.handleAdminUnlock);
-  }
+  if (adminUnlockBtn) adminUnlockBtn.addEventListener("click", window.handleAdminUnlock);
 
   if (adminPasswordInput) {
     adminPasswordInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        window.handleAdminUnlock();
-      }
+      if (e.key === "Enter") window.handleAdminUnlock();
     });
   }
 
-  // ESC key closes modals
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      window.closeAdminModalFunc();
-    }
+    if (e.key === "Escape") window.closeAdminModalFunc();
   });
 });
