@@ -10,8 +10,18 @@ const DEFAULT_PHOTOS = {
 function getBlobToken() {
   if (process.env.CHURCH_READ_WRITE_TOKEN) return process.env.CHURCH_READ_WRITE_TOKEN;
   if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  if (process.env.CHURCH_TOKEN) return process.env.CHURCH_TOKEN;
+  
+  for (const key of Object.keys(process.env)) {
+    if ((key.startsWith('CHURCH_') || key.startsWith('BLOB_')) && key.includes('TOKEN')) {
+      if (process.env[key]) return process.env[key];
+    }
+  }
+
   const customKey = Object.keys(process.env).find(k => k.endsWith('_READ_WRITE_TOKEN') && process.env[k]);
-  return customKey ? process.env[customKey] : null;
+  if (customKey) return process.env[customKey];
+
+  return null;
 }
 
 export default async function handler(req, res) {
@@ -55,11 +65,13 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
+      tokenConfigured: !!token,
       photos
     });
   } catch (err) {
     return res.status(200).json({
       success: true,
+      tokenConfigured: false,
       photos: DEFAULT_PHOTOS
     });
   }

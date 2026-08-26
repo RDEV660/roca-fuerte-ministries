@@ -9,10 +9,23 @@ export const config = {
 };
 
 function getBlobToken() {
+  // 1. Direct checks
   if (process.env.CHURCH_READ_WRITE_TOKEN) return process.env.CHURCH_READ_WRITE_TOKEN;
   if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  if (process.env.CHURCH_TOKEN) return process.env.CHURCH_TOKEN;
+  
+  // 2. Search any env key with CHURCH or BLOB that looks like a token
+  for (const key of Object.keys(process.env)) {
+    if ((key.startsWith('CHURCH_') || key.startsWith('BLOB_')) && key.includes('TOKEN')) {
+      if (process.env[key]) return process.env[key];
+    }
+  }
+
+  // 3. Search any _READ_WRITE_TOKEN
   const customKey = Object.keys(process.env).find(k => k.endsWith('_READ_WRITE_TOKEN') && process.env[k]);
-  return customKey ? process.env[customKey] : null;
+  if (customKey) return process.env[customKey];
+
+  return null;
 }
 
 export default async function handler(req, res) {
@@ -50,6 +63,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid base64 image data' });
     }
 
+    // Diagnostics: List detected environment variable keys (names only, no secrets)
+    const detectedEnvKeys = Object.keys(process.env).filter(
+      k => k.includes('BLOB') || k.includes('CHURCH') || k.includes('STORE') || k.includes('KV')
+    );
+
     // Parse image buffer
     const base64Data = image.split(',')[1];
     const mimeType = image.split(';')[0].split(':')[1] || 'image/jpeg';
@@ -58,20 +76,28 @@ export default async function handler(req, res) {
 
     let finalUrl = image;
     let isBlobActive = false;
+    let uploadError = null;
 
     const token = getBlobToken();
 
-    // Upload to Vercel Blob Storage with dynamic token
+    // Upload to Vercel Blob Storage
     if (token) {
-      const blob = await put(filename, buffer, {
-        access: 'public',
-        contentType: mimeType,
-        addRandomSuffix: false,
-        token: token
-      });
-      finalUrl = blob.url;
-      isBlobActive = true;
-      console.log(`[Vercel Blob] Uploaded ${filename} -> ${finalUrl}`);
+      try {
+        const blob = await put(filename, buffer, {
+          access: 'public',
+          contentType: mimeType,
+          addRandomSuffix: false,
+          token: token
+        });
+        finalUrl = blob.url;
+        isBlobActive = true;
+        console.log(`[Vercel Blob] Uploaded ${filename} -> ${finalUrl}`);
+      } catch (putErr) {
+        uploadError = putErr.message;
+        console.error('[Vercel Blob Put Error]', putErr);
+      }
+    } else {
+      console.warn('[Vercel Blob] No matching token found. Available keys:', detectedEnvKeys);
     }
 
     return res.status(200).json({
@@ -79,9 +105,11 @@ export default async function handler(req, res) {
       slot,
       url: finalUrl,
       blobActive: isBlobActive,
+      detectedKeys: detectedEnvKeys,
+      uploadError: uploadError,
       message: isBlobActive 
         ? '✓ Photo uploaded and saved to Vercel Blob CDN successfully!' 
-        : 'Saved locally. (To sync worldwide, connect Vercel Blob in your Vercel Dashboard Storage tab).'
+        : `Token check: [${detectedEnvKeys.join(', ')}]. Redeploy may be required if variables were just added.`
     });
   } catch (err) {
     console.error('[Vercel Blob Upload Error]', err);
