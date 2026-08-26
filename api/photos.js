@@ -7,6 +7,12 @@ const DEFAULT_PHOTOS = {
   damas: 'images/damas-prayer.jpg'
 };
 
+function getBlobToken() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  const customKey = Object.keys(process.env).find(k => k.endsWith('_READ_WRITE_TOKEN') && process.env[k]);
+  return customKey ? process.env[customKey] : null;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,11 +33,12 @@ export default async function handler(req, res) {
 
   try {
     const photos = { ...DEFAULT_PHOTOS };
+    const token = getBlobToken();
 
     // Query Vercel Blob storage for uploaded church photos
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    if (token) {
       try {
-        const { blobs } = await list({ prefix: 'church-' });
+        const { blobs } = await list({ prefix: 'church-', token: token });
         if (blobs && blobs.length > 0) {
           for (const b of blobs) {
             if (b.pathname.includes('church-pastor')) photos.pastor = b.url;

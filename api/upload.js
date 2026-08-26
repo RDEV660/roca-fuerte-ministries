@@ -8,6 +8,13 @@ export const config = {
   }
 };
 
+function getBlobToken() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  // Check any custom prefix ending in _READ_WRITE_TOKEN
+  const customKey = Object.keys(process.env).find(k => k.endsWith('_READ_WRITE_TOKEN') && process.env[k]);
+  return customKey ? process.env[customKey] : null;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -52,12 +59,15 @@ export default async function handler(req, res) {
     let finalUrl = image;
     let isBlobActive = false;
 
-    // 1. Upload to Vercel Blob Storage if connected
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const token = getBlobToken();
+
+    // Upload to Vercel Blob Storage with dynamic token
+    if (token) {
       const blob = await put(filename, buffer, {
         access: 'public',
         contentType: mimeType,
-        addRandomSuffix: false
+        addRandomSuffix: false,
+        token: token
       });
       finalUrl = blob.url;
       isBlobActive = true;
@@ -70,8 +80,8 @@ export default async function handler(req, res) {
       url: finalUrl,
       blobActive: isBlobActive,
       message: isBlobActive 
-        ? '✓ Photo uploaded and stored on Vercel Blob CDN successfully!' 
-        : 'Saved locally. (To sync worldwide to phones, connect Vercel Blob in your Vercel Dashboard Storage tab).'
+        ? '✓ Photo uploaded and saved to Vercel Blob CDN successfully!' 
+        : 'Saved locally. (To sync worldwide, connect Vercel Blob in your Vercel Dashboard Storage tab).'
     });
   } catch (err) {
     console.error('[Vercel Blob Upload Error]', err);
