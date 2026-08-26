@@ -246,7 +246,9 @@ function compressImage(file, maxWidth = 1400, quality = 0.85) {
 
           elem.width = width;
           elem.height = height;
-          const ctx = elem.getContext("2d");
+          const ctx = elem.getContext("2d", { colorSpace: "srgb" });
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
           const dataUrl = elem.toDataURL("image/jpeg", quality);
           console.log(`[RF-Image] ✓ Compressed from ${(file.size / 1024).toFixed(0)} KB to ${(dataUrl.length * 0.75 / 1024).toFixed(0)} KB (${width}x${height}px)`);
@@ -442,7 +444,7 @@ async function applyStoredPhotos() {
 async function syncDatabasePhotos() {
   try {
     console.log("[RF-Init] Checking live database (/api/photos)...");
-    const res = await fetch("/api/photos");
+    const res = await fetch("/api/photos?t=" + Date.now());
     if (res.ok) {
       const data = await res.json();
       if (data && data.photos) {
@@ -459,17 +461,17 @@ async function syncDatabasePhotos() {
           const cloudVal = p[s.key];
           const isVercelBlob = cloudVal && cloudVal.startsWith("http") && !cloudVal.includes("localhost") && !cloudVal.includes("images/");
           
+          const target = document.getElementById(s.target);
+          const preview = document.getElementById(s.preview);
+
           if (isVercelBlob) {
             console.log(`[RF-Init] Applying live Vercel Blob URL for '${s.key}': ${cloudVal}`);
             await savePhotoToStorage(s.storageKey, cloudVal);
-            const target = document.getElementById(s.target);
-            const preview = document.getElementById(s.preview);
             if (target) target.src = cloudVal;
             if (preview) preview.src = cloudVal;
-          } else if (!localStorage.getItem(s.storageKey)) {
-            // No custom photo in cloud or local: ensure default image is shown
-            const target = document.getElementById(s.target);
-            const preview = document.getElementById(s.preview);
+          } else {
+            // Cloud has default photo or was reset: ensure default image is shown
+            localStorage.removeItem(s.storageKey);
             if (target) target.src = s.defaultSrc;
             if (preview) preview.src = s.defaultSrc;
           }
