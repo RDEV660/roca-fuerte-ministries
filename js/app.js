@@ -1,6 +1,6 @@
 /**
  * RF MINISTRIES & ACADEMY
- * High-Capacity IndexedDB & Cloud Sync Engine with Detailed Console Logging
+ * High-Capacity IndexedDB & Vercel Blob Cloud Sync Engine
  */
 
 // Master Administrator Password
@@ -15,12 +15,12 @@ const DB_NAME = "RF_MINISTRIES_PHOTO_DB";
 const STORE_NAME = "church_photos";
 
 function openPhotoDB() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (!window.indexedDB) {
-      console.warn("[RF-DB] IndexedDB not supported by browser, using localStorage fallback.");
+      console.warn("[RF-DB] IndexedDB not supported by browser, using localStorage.");
       return resolve(null);
     }
-    const request = indexedDB.open(DB_NAME, 1);
+    const request = indexedDB.open(DB_NAME, 2);
     request.onupgradeneeded = (e) => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -36,18 +36,26 @@ function openPhotoDB() {
   });
 }
 
-async function savePhotoToStorage(key, base64) {
-  console.log(`[RF-Storage] Saving '${key}' (${Math.round(base64.length / 1024)} KB)...`);
+async function savePhotoToStorage(key, dataString) {
+  console.log(`[RF-Storage] Saving '${key}' (${Math.round(dataString.length / 1024)} KB)...`);
   
-  // 1. Save to IndexedDB (No quota limit)
+  // 1. Save to LocalStorage immediately for instant synchronous load
+  try {
+    localStorage.setItem(key, dataString);
+    console.log(`[RF-Storage] ✓ Saved '${key}' to localStorage.`);
+  } catch (lsErr) {
+    console.warn(`[RF-Storage] localStorage quota notice (saving to IndexedDB):`, lsErr.message);
+  }
+
+  // 2. Save to IndexedDB for high-capacity persistent storage
   try {
     const db = await openPhotoDB();
     if (db) {
       const tx = db.transaction(STORE_NAME, "readwrite");
       const store = tx.objectStore(STORE_NAME);
-      store.put(base64, key);
+      store.put(dataString, key);
       tx.oncomplete = () => {
-        console.log(`%c[RF-Storage] ✓ Successfully persisted '${key}' to IndexedDB!`, "color: #10B981; font-weight: bold;");
+        console.log(`%c[RF-Storage] ✓ Persisted '${key}' to IndexedDB!`, "color: #10B981; font-weight: bold;");
       };
       tx.onerror = (err) => {
         console.error(`[RF-Storage] IndexedDB write error for '${key}':`, err);
@@ -56,18 +64,16 @@ async function savePhotoToStorage(key, base64) {
   } catch (idbErr) {
     console.error("[RF-Storage] IndexedDB exception:", idbErr);
   }
-
-  // 2. Also attempt LocalStorage for legacy compatibility
-  try {
-    localStorage.setItem(key, base64);
-    console.log(`[RF-Storage] ✓ Also saved '${key}' to localStorage.`);
-  } catch (lsErr) {
-    console.warn(`[RF-Storage] localStorage quota exceeded (saved in IndexedDB instead):`, lsErr.message);
-  }
 }
 
 async function getPhotoFromStorage(key) {
-  // 1. Try IndexedDB first
+  // 1. Check localStorage first (instant)
+  const localVal = localStorage.getItem(key);
+  if (localVal) {
+    return localVal;
+  }
+
+  // 2. Check IndexedDB
   try {
     const db = await openPhotoDB();
     if (db) {
@@ -76,25 +82,14 @@ async function getPhotoFromStorage(key) {
         const store = tx.objectStore(STORE_NAME);
         const req = store.get(key);
         req.onsuccess = () => resolve(req.result || null);
-        req.onerror = (err) => {
-          console.error(`[RF-Storage] IndexedDB read error for '${key}':`, err);
-          resolve(null);
-        };
+        req.onerror = () => resolve(null);
       });
       if (result) {
-        console.log(`[RF-Storage] Retrieved '${key}' from IndexedDB (${Math.round(result.length / 1024)} KB).`);
         return result;
       }
     }
   } catch (err) {
-    console.error("[RF-Storage] IndexedDB get exception:", err);
-  }
-
-  // 2. Fallback to localStorage
-  const localVal = localStorage.getItem(key);
-  if (localVal) {
-    console.log(`[RF-Storage] Retrieved '${key}' from localStorage.`);
-    return localVal;
+    console.error("[RF-Storage] IndexedDB read exception:", err);
   }
 
   return null;
@@ -229,7 +224,7 @@ window.handleAdminUnlock = async function() {
         }
       }
     } catch (e) {
-      console.log("[RF-Admin] Serverless auth check complete.");
+      // Offline mode
     }
   } else {
     console.error("[RF-Admin] ✗ Incorrect password entered:", entered);
@@ -241,7 +236,7 @@ window.handleAdminUnlock = async function() {
 
 // Compress image in browser before storage & upload
 function compressImage(file, maxWidth = 1400, quality = 0.85) {
-  console.log(`[RF-Image] Reading '${file.name}' (size: ${(file.size / 1024 / 1024).toFixed(2)} MB, type: ${file.type})...`);
+  console.log(`[RF-Image] Reading '${file.name}' (size: ${(file.size / 1024 / 1024).toFixed(2)} MB)...`);
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = (err) => {
@@ -250,10 +245,7 @@ function compressImage(file, maxWidth = 1400, quality = 0.85) {
     };
     reader.onload = (event) => {
       const img = new Image();
-      img.onerror = (imgErr) => {
-        console.warn("[RF-Image] Image load error on canvas, using raw data URI:", imgErr);
-        resolve(event.target.result);
-      };
+      img.onerror = () => resolve(event.target.result);
       img.onload = () => {
         try {
           const elem = document.createElement("canvas");
@@ -273,7 +265,6 @@ function compressImage(file, maxWidth = 1400, quality = 0.85) {
           console.log(`[RF-Image] ✓ Compressed from ${(file.size / 1024).toFixed(0)} KB to ${(dataUrl.length * 0.75 / 1024).toFixed(0)} KB (${width}x${height}px)`);
           resolve(dataUrl);
         } catch (canvasErr) {
-          console.error("[RF-Image] Canvas compression exception:", canvasErr);
           resolve(event.target.result);
         }
       };
@@ -285,12 +276,9 @@ function compressImage(file, maxWidth = 1400, quality = 0.85) {
 
 // Live Cloud Image Upload & Database Sync
 window.handleImageUpload = async function(event, targetImgId, previewImgId, storageKey) {
-  console.log(`[RF-Upload] Image upload triggered for '${storageKey}' (target: #${targetImgId}, preview: #${previewImgId})`);
+  console.log(`[RF-Upload] Upload triggered for '${storageKey}'`);
   const file = event.target.files && event.target.files[0];
-  if (!file) {
-    console.warn("[RF-Upload] No file selected.");
-    return;
-  }
+  if (!file) return;
 
   const slotMap = {
     rf_photo_pastor: "pastor",
@@ -302,7 +290,7 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
 
   const statusEl = document.getElementById("cloudSyncBadge");
   if (statusEl) {
-    statusEl.innerHTML = `<span style="color: #D4AF37;">⏳ Processing & saving photo...</span>`;
+    statusEl.innerHTML = `<span style="color: #D4AF37;">⏳ Uploading & saving photo...</span>`;
     statusEl.style.display = "block";
   }
 
@@ -310,24 +298,16 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
     // 1. Compress Image
     const compressedBase64 = await compressImage(file);
 
-    // 2. Persist to storage (IndexedDB + localStorage)
+    // 2. Persist to storage immediately (localStorage + IndexedDB)
     await savePhotoToStorage(storageKey, compressedBase64);
 
     // 3. Update DOM elements immediately
     const target = document.getElementById(targetImgId);
     const preview = document.getElementById(previewImgId);
-    if (target) {
-      target.src = compressedBase64;
-      console.log(`[RF-Upload] Updated DOM #${targetImgId} image source.`);
-    } else {
-      console.warn(`[RF-Upload] Target DOM element #${targetImgId} not found!`);
-    }
-    if (preview) {
-      preview.src = compressedBase64;
-      console.log(`[RF-Upload] Updated preview #${previewImgId} image source.`);
-    }
+    if (target) target.src = compressedBase64;
+    if (preview) preview.src = compressedBase64;
 
-    // 4. Send to Vercel Cloud Database API
+    // 4. Send to Vercel Blob Cloud Database API
     console.log(`[RF-Upload] Sending to /api/upload for slot '${slotName}'...`);
     try {
       const res = await fetch("/api/upload", {
@@ -354,28 +334,25 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
         }
 
         if (statusEl) {
-          statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved to Live Database! Visible worldwide.</span>`;
+          statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved to Vercel Blob Cloud Storage! Visible worldwide.</span>`;
           setTimeout(() => { statusEl.style.display = "none"; }, 5000);
         }
       } else {
-        const errText = await res.text();
-        console.warn("[RF-Upload] /api/upload returned non-200:", errText);
         if (statusEl) {
-          statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved locally on your device!</span>`;
+          statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved on this device! (Connect Vercel Blob for worldwide sync).</span>`;
           setTimeout(() => { statusEl.style.display = "none"; }, 4000);
         }
       }
     } catch (netErr) {
-      console.warn("[RF-Upload] Network upload notice (saved locally in IndexedDB):", netErr.message);
       if (statusEl) {
-        statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved permanently on your device!</span>`;
+        statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved permanently on this device!</span>`;
         setTimeout(() => { statusEl.style.display = "none"; }, 4000);
       }
     }
   } catch (err) {
-    console.error("[RF-Upload] Fatal error during image processing:", err);
+    console.error("[RF-Upload] Error during image processing:", err);
     if (statusEl) {
-      statusEl.innerHTML = `<span style="color: #EF4444;">✗ Error saving photo: ${err.message || err}</span>`;
+      statusEl.innerHTML = `<span style="color: #EF4444;">✗ Error: ${err.message || err}</span>`;
     }
   }
 };
@@ -403,11 +380,8 @@ window.resetAllCustomPhotos = async function() {
     if (db) {
       const tx = db.transaction(STORE_NAME, "readwrite");
       tx.objectStore(STORE_NAME).clear();
-      console.log("[RF-Reset] IndexedDB store cleared.");
     }
-  } catch (e) {
-    console.error("[RF-Reset] IndexedDB clear error:", e);
-  }
+  } catch (e) {}
 
   // Clear localStorage and reset DOM
   Object.keys(defaults).forEach(key => {
@@ -436,9 +410,8 @@ window.resetAllCustomPhotos = async function() {
   }
 };
 
-// Apply photos on startup from IndexedDB and localStorage
+// Apply photos synchronously on startup
 async function applyStoredPhotos() {
-  console.log("[RF-Init] Loading saved church photos from IndexedDB & LocalStorage...");
   const keys = [
     { key: "rf_photo_pastor", target: "imgPastor", preview: "previewPastor" },
     { key: "rf_photo_congregation", target: "imgCongregation", preview: "previewCongregation" },
@@ -446,23 +419,31 @@ async function applyStoredPhotos() {
     { key: "rf_photo_damas", target: "imgDamas", preview: "previewDamas" }
   ];
 
+  // 1. Instant check from localStorage
+  for (const item of keys) {
+    const localVal = localStorage.getItem(item.key);
+    if (localVal) {
+      const target = document.getElementById(item.target);
+      const preview = document.getElementById(item.preview);
+      if (target) target.src = localVal;
+      if (preview) preview.src = localVal;
+      console.log(`[RF-Init] ✓ Restored '${item.key}' from localStorage to #${item.target}`);
+    }
+  }
+
+  // 2. Check IndexedDB
   for (const item of keys) {
     const stored = await getPhotoFromStorage(item.key);
     if (stored) {
       const target = document.getElementById(item.target);
       const preview = document.getElementById(item.preview);
-      if (target) {
-        target.src = stored;
-        console.log(`[RF-Init] Applied saved photo to #${item.target}`);
-      }
-      if (preview) {
-        preview.src = stored;
-      }
+      if (target) target.src = stored;
+      if (preview) preview.src = stored;
     }
   }
 }
 
-// Fetch live database photos from server
+// Fetch live Vercel Blob cloud database photos
 async function syncDatabasePhotos() {
   try {
     console.log("[RF-Init] Checking live database (/api/photos)...");
@@ -481,9 +462,10 @@ async function syncDatabasePhotos() {
 
         for (const s of slots) {
           const cloudVal = p[s.key];
-          const isCustomCloud = cloudVal && (cloudVal.startsWith("http") || cloudVal.startsWith("data:"));
-          if (isCustomCloud) {
-            console.log(`[RF-Init] Applying custom cloud photo for '${s.key}'`);
+          // Only replace if it's an actual external Vercel Blob URL (https://...public.blob.vercel-storage.com)
+          const isVercelBlob = cloudVal && cloudVal.startsWith("http") && !cloudVal.includes("localhost") && !cloudVal.includes("images/");
+          if (isVercelBlob) {
+            console.log(`[RF-Init] Applying live Vercel Blob URL for '${s.key}': ${cloudVal}`);
             await savePhotoToStorage(s.storageKey, cloudVal);
             const target = document.getElementById(s.target);
             const preview = document.getElementById(s.preview);
@@ -494,7 +476,7 @@ async function syncDatabasePhotos() {
       }
     }
   } catch (e) {
-    console.log("[RF-Init] Cloud database sync skipped (running in offline/local mode).");
+    console.log("[RF-Init] Cloud database sync check complete.");
   }
 }
 
@@ -503,10 +485,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const initialLang = detectSystemLanguage();
   setLang(initialLang);
 
-  // 1. Load saved photos from IndexedDB immediately
+  // 1. Restore saved photos immediately on startup
   await applyStoredPhotos();
 
-  // 2. Check cloud database in background
+  // 2. Check Vercel Blob cloud database in background
   syncDatabasePhotos();
 
   // Language buttons
