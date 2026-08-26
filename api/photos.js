@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
-  res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=30');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -45,17 +45,20 @@ export default async function handler(req, res) {
   try {
     const photos = { ...DEFAULT_PHOTOS };
     const token = getBlobToken();
+    let rawBlobs = [];
 
     // Query Vercel Blob storage for uploaded church photos
     if (token) {
       try {
-        const { blobs } = await list({ prefix: 'church-', token: token });
+        const { blobs } = await list({ token: token });
+        rawBlobs = blobs || [];
         if (blobs && blobs.length > 0) {
           for (const b of blobs) {
-            if (b.pathname.includes('church-pastor')) photos.pastor = b.url;
-            if (b.pathname.includes('church-congregation')) photos.congregation = b.url;
-            if (b.pathname.includes('church-youth')) photos.youth = b.url;
-            if (b.pathname.includes('church-damas')) photos.damas = b.url;
+            const path = (b.pathname || b.url || '').toLowerCase();
+            if (path.includes('pastor')) photos.pastor = b.url;
+            if (path.includes('congregation')) photos.congregation = b.url;
+            if (path.includes('youth')) photos.youth = b.url;
+            if (path.includes('damas')) photos.damas = b.url;
           }
         }
       } catch (blobErr) {
@@ -66,6 +69,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       tokenConfigured: !!token,
+      blobCount: rawBlobs.length,
       photos
     });
   } catch (err) {
