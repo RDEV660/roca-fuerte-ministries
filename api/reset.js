@@ -1,4 +1,5 @@
-// Vercel Serverless Function: Reset Photos to Defaults
+import { list, del } from '@vercel/blob';
+
 const DEFAULT_PHOTOS = {
   pastor: 'images/pastor-susie.jpg',
   congregation: 'images/congregation-prayer.jpg',
@@ -7,17 +8,12 @@ const DEFAULT_PHOTOS = {
 };
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
@@ -33,26 +29,23 @@ export default async function handler(req, res) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
-    // Reset KV store if active
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
       try {
-        await fetch(`${process.env.KV_REST_API_URL}/set/rf_photos`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(JSON.stringify(DEFAULT_PHOTOS))
-        });
-      } catch (err) {
-        console.warn('KV reset error', err);
+        const { blobs } = await list({ prefix: 'church-' });
+        const urlsToDelete = blobs.map(b => b.url);
+        if (urlsToDelete.length > 0) {
+          await del(urlsToDelete);
+          console.log(`[Vercel Blob] Deleted ${urlsToDelete.length} custom blobs.`);
+        }
+      } catch (delErr) {
+        console.warn('[Vercel Blob Reset Warning]', delErr.message);
       }
     }
 
     return res.status(200).json({
       success: true,
       photos: DEFAULT_PHOTOS,
-      message: 'All photos successfully reset to church defaults.'
+      message: 'All photos reset to original church defaults.'
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
