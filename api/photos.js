@@ -8,6 +8,7 @@ const DEFAULT_PHOTOS = {
 };
 
 function getBlobToken() {
+  if (process.env.CHURCH_READ_WRITE_TOKEN) return process.env.CHURCH_READ_WRITE_TOKEN;
   if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
   const customKey = Object.keys(process.env).find(k => k.endsWith('_READ_WRITE_TOKEN') && process.env[k]);
   return customKey ? process.env[customKey] : null;
