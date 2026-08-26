@@ -54,8 +54,8 @@ export default async function handler(req, res) {
 
     if (token) {
       try {
-        const { blobs } = await list({ prefix: 'church-', token: token });
-        const urlsToDelete = blobs.map(b => b.url);
+        const { blobs } = await list({ token: token });
+        const urlsToDelete = (blobs || []).map(b => b.url);
         if (urlsToDelete.length > 0) {
           await del(urlsToDelete, { token: token });
           console.log(`[Vercel Blob] Deleted ${urlsToDelete.length} custom blobs from store.`);
