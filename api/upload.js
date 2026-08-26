@@ -9,7 +9,6 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  // CORS configuration
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -51,6 +50,7 @@ export default async function handler(req, res) {
     const filename = `church-${slot}.jpg`;
 
     let finalUrl = image;
+    let isBlobActive = false;
 
     // 1. Upload to Vercel Blob Storage if connected
     if (process.env.BLOB_READ_WRITE_TOKEN) {
@@ -60,16 +60,18 @@ export default async function handler(req, res) {
         addRandomSuffix: false
       });
       finalUrl = blob.url;
+      isBlobActive = true;
       console.log(`[Vercel Blob] Uploaded ${filename} -> ${finalUrl}`);
-    } else {
-      console.warn('[Vercel Blob] BLOB_READ_WRITE_TOKEN not found in environment.');
     }
 
     return res.status(200).json({
       success: true,
       slot,
       url: finalUrl,
-      message: 'Photo uploaded and saved to Vercel Blob storage successfully!'
+      blobActive: isBlobActive,
+      message: isBlobActive 
+        ? '✓ Photo uploaded and stored on Vercel Blob CDN successfully!' 
+        : 'Saved locally. (To sync worldwide to phones, connect Vercel Blob in your Vercel Dashboard Storage tab).'
     });
   } catch (err) {
     console.error('[Vercel Blob Upload Error]', err);
