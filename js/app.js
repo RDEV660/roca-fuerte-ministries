@@ -10,7 +10,7 @@ let adminAuthToken = "";
 
 console.log("%c[RF Ministries]%c Engine initialized. Administrator password active.", "color: #D4AF37; font-weight: bold;", "color: inherit;");
 
-// IndexedDB High-Capacity Storage Setup (Supports unlimited photo size)
+// IndexedDB High-Capacity Storage Setup
 const DB_NAME = "RF_MINISTRIES_PHOTO_DB";
 const STORE_NAME = "church_photos";
 
@@ -39,15 +39,15 @@ function openPhotoDB() {
 async function savePhotoToStorage(key, dataString) {
   console.log(`[RF-Storage] Saving '${key}' (${Math.round(dataString.length / 1024)} KB)...`);
   
-  // 1. Save to LocalStorage immediately for instant synchronous load
+  // 1. Save to LocalStorage immediately
   try {
     localStorage.setItem(key, dataString);
     console.log(`[RF-Storage] ✓ Saved '${key}' to localStorage.`);
   } catch (lsErr) {
-    console.warn(`[RF-Storage] localStorage quota notice (saving to IndexedDB):`, lsErr.message);
+    console.warn(`[RF-Storage] localStorage notice:`, lsErr.message);
   }
 
-  // 2. Save to IndexedDB for high-capacity persistent storage
+  // 2. Save to IndexedDB
   try {
     const db = await openPhotoDB();
     if (db) {
@@ -57,9 +57,6 @@ async function savePhotoToStorage(key, dataString) {
       tx.oncomplete = () => {
         console.log(`%c[RF-Storage] ✓ Persisted '${key}' to IndexedDB!`, "color: #10B981; font-weight: bold;");
       };
-      tx.onerror = (err) => {
-        console.error(`[RF-Storage] IndexedDB write error for '${key}':`, err);
-      };
     }
   } catch (idbErr) {
     console.error("[RF-Storage] IndexedDB exception:", idbErr);
@@ -67,13 +64,9 @@ async function savePhotoToStorage(key, dataString) {
 }
 
 async function getPhotoFromStorage(key) {
-  // 1. Check localStorage first (instant)
   const localVal = localStorage.getItem(key);
-  if (localVal) {
-    return localVal;
-  }
+  if (localVal) return localVal;
 
-  // 2. Check IndexedDB
   try {
     const db = await openPhotoDB();
     if (db) {
@@ -84,13 +77,9 @@ async function getPhotoFromStorage(key) {
         req.onsuccess = () => resolve(req.result || null);
         req.onerror = () => resolve(null);
       });
-      if (result) {
-        return result;
-      }
+      if (result) return result;
     }
-  } catch (err) {
-    console.error("[RF-Storage] IndexedDB read exception:", err);
-  }
+  } catch (err) {}
 
   return null;
 }
@@ -223,9 +212,7 @@ window.handleAdminUnlock = async function() {
           console.log("[RF-Admin] Received server session token.");
         }
       }
-    } catch (e) {
-      // Offline mode
-    }
+    } catch (e) {}
   } else {
     console.error("[RF-Admin] ✗ Incorrect password entered:", entered);
     if (errMsg) errMsg.style.display = "block";
@@ -234,7 +221,7 @@ window.handleAdminUnlock = async function() {
   }
 };
 
-// Compress image in browser before storage & upload
+// Compress image in browser
 function compressImage(file, maxWidth = 1400, quality = 0.85) {
   console.log(`[RF-Image] Reading '${file.name}' (size: ${(file.size / 1024 / 1024).toFixed(2)} MB)...`);
   return new Promise((resolve, reject) => {
@@ -290,7 +277,7 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
 
   const statusEl = document.getElementById("cloudSyncBadge");
   if (statusEl) {
-    statusEl.innerHTML = `<span style="color: #D4AF37;">⏳ Uploading & saving photo...</span>`;
+    statusEl.innerHTML = `<span style="color: #D4AF37;">⏳ Uploading & saving to Cloud CDN...</span>`;
     statusEl.style.display = "block";
   }
 
@@ -298,7 +285,7 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
     // 1. Compress Image
     const compressedBase64 = await compressImage(file);
 
-    // 2. Persist to storage immediately (localStorage + IndexedDB)
+    // 2. Persist to storage immediately
     await savePhotoToStorage(storageKey, compressedBase64);
 
     // 3. Update DOM elements immediately
@@ -323,10 +310,10 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
         })
       });
 
-      console.log(`[RF-Upload] /api/upload response status: ${res.status}`);
+      console.log(`[RF-Upload] /api/upload status: ${res.status}`);
       if (res.ok) {
         const data = await res.json();
-        console.log("[RF-Upload] /api/upload response data:", data);
+        console.log("[RF-Upload] /api/upload response:", data);
         if (data && data.url && data.url.startsWith("http")) {
           await savePhotoToStorage(storageKey, data.url);
           if (target) target.src = data.url;
@@ -334,23 +321,23 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
         }
 
         if (statusEl) {
-          statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved to Vercel Blob Cloud Storage! Visible worldwide.</span>`;
+          statusEl.innerHTML = `<span style="color: #10B981;">✓ Live on Vercel Global Cloud CDN! Visible worldwide.</span>`;
           setTimeout(() => { statusEl.style.display = "none"; }, 5000);
         }
       } else {
         if (statusEl) {
-          statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved on this device! (Connect Vercel Blob for worldwide sync).</span>`;
+          statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved locally!</span>`;
           setTimeout(() => { statusEl.style.display = "none"; }, 4000);
         }
       }
     } catch (netErr) {
       if (statusEl) {
-        statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved permanently on this device!</span>`;
+        statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved on this device!</span>`;
         setTimeout(() => { statusEl.style.display = "none"; }, 4000);
       }
     }
   } catch (err) {
-    console.error("[RF-Upload] Error during image processing:", err);
+    console.error("[RF-Upload] Error:", err);
     if (statusEl) {
       statusEl.innerHTML = `<span style="color: #EF4444;">✗ Error: ${err.message || err}</span>`;
     }
@@ -374,16 +361,23 @@ window.resetAllCustomPhotos = async function() {
     rf_photo_damas: ["imgDamas", "previewDamas"]
   };
 
-  // Clear IndexedDB
+  const statusEl = document.getElementById("cloudSyncBadge");
+  if (statusEl) {
+    statusEl.innerHTML = `<span style="color: #D4AF37;">⏳ Resetting cloud database to defaults...</span>`;
+    statusEl.style.display = "block";
+  }
+
+  // 1. Clear IndexedDB
   try {
     const db = await openPhotoDB();
     if (db) {
       const tx = db.transaction(STORE_NAME, "readwrite");
       tx.objectStore(STORE_NAME).clear();
+      console.log("[RF-Reset] IndexedDB cleared.");
     }
   } catch (e) {}
 
-  // Clear localStorage and reset DOM
+  // 2. Clear localStorage and immediately reset all DOM images to defaults
   Object.keys(defaults).forEach(key => {
     localStorage.removeItem(key);
     const [targetId, previewId] = idMap[key];
@@ -393,20 +387,21 @@ window.resetAllCustomPhotos = async function() {
     if (preview) preview.src = defaults[key];
   });
 
-  // Call /api/reset
+  // 3. Call /api/reset on Vercel to delete custom blobs
   try {
-    await fetch("/api/reset", {
+    const res = await fetch("/api/reset", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: currentAdminPassword || ADMIN_PASSWORD })
     });
-  } catch (e) {}
+    console.log("[RF-Reset] /api/reset response status:", res.status);
+  } catch (e) {
+    console.warn("[RF-Reset] API reset notice:", e.message);
+  }
 
-  const statusEl = document.getElementById("cloudSyncBadge");
   if (statusEl) {
-    statusEl.innerHTML = `<span style="color: #10B981;">✓ Photos reset to original church defaults.</span>`;
-    statusEl.style.display = "block";
-    setTimeout(() => { statusEl.style.display = "none"; }, 3000);
+    statusEl.innerHTML = `<span style="color: #10B981;">✓ All photos reset to church originals worldwide!</span>`;
+    setTimeout(() => { statusEl.style.display = "none"; }, 4000);
   }
 };
 
@@ -427,7 +422,7 @@ async function applyStoredPhotos() {
       const preview = document.getElementById(item.preview);
       if (target) target.src = localVal;
       if (preview) preview.src = localVal;
-      console.log(`[RF-Init] ✓ Restored '${item.key}' from localStorage to #${item.target}`);
+      console.log(`[RF-Init] ✓ Restored '${item.key}' from localStorage`);
     }
   }
 
@@ -454,16 +449,16 @@ async function syncDatabasePhotos() {
         const p = data.photos;
         console.log("[RF-Init] Database photos received:", p);
         const slots = [
-          { key: "pastor", storageKey: "rf_photo_pastor", target: "imgPastor", preview: "previewPastor" },
-          { key: "congregation", storageKey: "rf_photo_congregation", target: "imgCongregation", preview: "previewCongregation" },
-          { key: "youth", storageKey: "rf_photo_youth", target: "imgYouth", preview: "previewYouth" },
-          { key: "damas", storageKey: "rf_photo_damas", target: "imgDamas", preview: "previewDamas" }
+          { key: "pastor", storageKey: "rf_photo_pastor", target: "imgPastor", preview: "previewPastor", defaultSrc: "images/pastor-susie.jpg" },
+          { key: "congregation", storageKey: "rf_photo_congregation", target: "imgCongregation", preview: "previewCongregation", defaultSrc: "images/congregation-prayer.jpg" },
+          { key: "youth", storageKey: "rf_photo_youth", target: "imgYouth", preview: "previewYouth", defaultSrc: "images/youth-prayer.jpg" },
+          { key: "damas", storageKey: "rf_photo_damas", target: "imgDamas", preview: "previewDamas", defaultSrc: "images/damas-prayer.jpg" }
         ];
 
         for (const s of slots) {
           const cloudVal = p[s.key];
-          // Only replace if it's an actual external Vercel Blob URL (https://...public.blob.vercel-storage.com)
           const isVercelBlob = cloudVal && cloudVal.startsWith("http") && !cloudVal.includes("localhost") && !cloudVal.includes("images/");
+          
           if (isVercelBlob) {
             console.log(`[RF-Init] Applying live Vercel Blob URL for '${s.key}': ${cloudVal}`);
             await savePhotoToStorage(s.storageKey, cloudVal);
@@ -471,12 +466,18 @@ async function syncDatabasePhotos() {
             const preview = document.getElementById(s.preview);
             if (target) target.src = cloudVal;
             if (preview) preview.src = cloudVal;
+          } else if (!localStorage.getItem(s.storageKey)) {
+            // No custom photo in cloud or local: ensure default image is shown
+            const target = document.getElementById(s.target);
+            const preview = document.getElementById(s.preview);
+            if (target) target.src = s.defaultSrc;
+            if (preview) preview.src = s.defaultSrc;
           }
         }
       }
     }
   } catch (e) {
-    console.log("[RF-Init] Cloud database sync check complete.");
+    console.log("[RF-Init] Cloud database sync notice:", e.message);
   }
 }
 

@@ -7,10 +7,31 @@ const DEFAULT_PHOTOS = {
   damas: 'images/damas-prayer.jpg'
 };
 
+function getBlobToken() {
+  if (process.env.CHURCH_READ_WRITE_TOKEN) return process.env.CHURCH_READ_WRITE_TOKEN;
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  if (process.env.CHURCH_TOKEN) return process.env.CHURCH_TOKEN;
+  
+  for (const key of Object.keys(process.env)) {
+    if ((key.startsWith('CHURCH_') || key.startsWith('BLOB_')) && key.includes('TOKEN')) {
+      if (process.env[key]) return process.env[key];
+    }
+  }
+
+  const customKey = Object.keys(process.env).find(k => k.endsWith('_READ_WRITE_TOKEN') && process.env[k]);
+  if (customKey) return process.env[customKey];
+
+  return null;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+  );
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -29,13 +50,15 @@ export default async function handler(req, res) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const token = getBlobToken();
+
+    if (token) {
       try {
-        const { blobs } = await list({ prefix: 'church-' });
+        const { blobs } = await list({ prefix: 'church-', token: token });
         const urlsToDelete = blobs.map(b => b.url);
         if (urlsToDelete.length > 0) {
-          await del(urlsToDelete);
-          console.log(`[Vercel Blob] Deleted ${urlsToDelete.length} custom blobs.`);
+          await del(urlsToDelete, { token: token });
+          console.log(`[Vercel Blob] Deleted ${urlsToDelete.length} custom blobs from store.`);
         }
       } catch (delErr) {
         console.warn('[Vercel Blob Reset Warning]', delErr.message);
