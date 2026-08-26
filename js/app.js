@@ -144,7 +144,7 @@ window.handleAdminUnlock = async function() {
         if (data.token) adminAuthToken = data.token;
       }
     } catch (e) {
-      console.log("Local offline mode or serverless initializing");
+      // Local offline mode
     }
   } else {
     if (errMsg) errMsg.style.display = "block";
@@ -155,30 +155,56 @@ window.handleAdminUnlock = async function() {
 
 // Compress image in browser before cloud upload
 function compressImage(file, maxWidth = 1400, quality = 0.85) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
+    reader.onerror = reject;
     reader.onload = (event) => {
       const img = new Image();
-      img.src = event.target.result;
+      img.onerror = () => resolve(event.target.result);
       img.onload = () => {
-        const elem = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+        try {
+          const elem = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
 
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          elem.width = width;
+          elem.height = height;
+          const ctx = elem.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = elem.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        } catch (err) {
+          resolve(event.target.result);
         }
-
-        elem.width = width;
-        elem.height = height;
-        const ctx = elem.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = elem.toDataURL('image/jpeg', quality);
-        resolve(dataUrl);
       };
+      img.src = event.target.result;
     };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Apply local photos synchronously from localStorage
+function applyLocalPhotos() {
+  const keys = [
+    { key: "rf_photo_pastor", target: "imgPastor", preview: "previewPastor" },
+    { key: "rf_photo_congregation", target: "imgCongregation", preview: "previewCongregation" },
+    { key: "rf_photo_youth", target: "imgYouth", preview: "previewYouth" },
+    { key: "rf_photo_damas", target: "imgDamas", preview: "previewDamas" }
+  ];
+
+  keys.forEach(item => {
+    const stored = localStorage.getItem(item.key);
+    if (stored) {
+      const target = document.getElementById(item.target);
+      const preview = document.getElementById(item.preview);
+      if (target) target.src = stored;
+      if (preview) preview.src = stored;
+    }
   });
 }
 
@@ -206,8 +232,13 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
     // 1. Compress image
     const compressedBase64 = await compressImage(file);
 
-    // 2. Update local UI preview immediately
-    localStorage.setItem(storageKey, compressedBase64);
+    // 2. Update local UI preview immediately & persist to localStorage
+    try {
+      localStorage.setItem(storageKey, compressedBase64);
+    } catch (storageErr) {
+      console.warn("LocalStorage full, keeping in DOM", storageErr);
+    }
+
     const target = document.getElementById(targetImgId);
     const preview = document.getElementById(previewImgId);
     if (target) target.src = compressedBase64;
@@ -229,19 +260,25 @@ window.handleImageUpload = async function(event, targetImgId, previewImgId, stor
 
     if (res.ok) {
       const data = await res.json();
+      if (data && data.url && data.url.startsWith("http")) {
+        localStorage.setItem(storageKey, data.url);
+        if (target) target.src = data.url;
+        if (preview) preview.src = data.url;
+      }
+
       if (statusEl) {
         statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved to Live Database! Visible to everyone worldwide.</span>`;
         setTimeout(() => { statusEl.style.display = "none"; }, 4000);
       }
     } else {
       if (statusEl) {
-        statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved locally! (Deploy on Vercel to sync database).</span>`;
+        statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved locally on this device!</span>`;
         setTimeout(() => { statusEl.style.display = "none"; }, 4000);
       }
     }
   } catch (err) {
     if (statusEl) {
-      statusEl.innerHTML = `<span style="color: #10B981;">✓ Updated locally!</span>`;
+      statusEl.innerHTML = `<span style="color: #10B981;">✓ Saved locally on this device!</span>`;
       setTimeout(() => { statusEl.style.display = "none"; }, 3000);
     }
   }
@@ -298,52 +335,49 @@ async function syncDatabasePhotos() {
       const data = await res.json();
       if (data && data.photos) {
         const p = data.photos;
-        if (p.pastor && document.getElementById("imgPastor")) {
-          document.getElementById("imgPastor").src = p.pastor;
-          if (document.getElementById("previewPastor")) document.getElementById("previewPastor").src = p.pastor;
-        }
-        if (p.congregation && document.getElementById("imgCongregation")) {
-          document.getElementById("imgCongregation").src = p.congregation;
-          if (document.getElementById("previewCongregation")) document.getElementById("previewCongregation").src = p.congregation;
-        }
-        if (p.youth && document.getElementById("imgYouth")) {
-          document.getElementById("imgYouth").src = p.youth;
-          if (document.getElementById("previewYouth")) document.getElementById("previewYouth").src = p.youth;
-        }
-        if (p.damas && document.getElementById("imgDamas")) {
-          document.getElementById("imgDamas").src = p.damas;
-          if (document.getElementById("previewDamas")) document.getElementById("previewDamas").src = p.damas;
-        }
-        return;
+        const slots = [
+          { key: 'pastor', localKey: 'rf_photo_pastor', target: 'imgPastor', preview: 'previewPastor' },
+          { key: 'congregation', localKey: 'rf_photo_congregation', target: 'imgCongregation', preview: 'previewCongregation' },
+          { key: 'youth', localKey: 'rf_photo_youth', target: 'imgYouth', preview: 'previewYouth' },
+          { key: 'damas', localKey: 'rf_photo_damas', target: 'imgDamas', preview: 'previewDamas' }
+        ];
+
+        slots.forEach(s => {
+          const cloudVal = p[s.key];
+          const isCustomCloud = cloudVal && (cloudVal.startsWith('http') || cloudVal.startsWith('data:'));
+          const localVal = localStorage.getItem(s.localKey);
+
+          if (isCustomCloud) {
+            // Cloud has custom updated photo
+            const target = document.getElementById(s.target);
+            const preview = document.getElementById(s.preview);
+            if (target) target.src = cloudVal;
+            if (preview) preview.src = cloudVal;
+            localStorage.setItem(s.localKey, cloudVal);
+          } else if (localVal) {
+            // Local custom photo exists
+            const target = document.getElementById(s.target);
+            const preview = document.getElementById(s.preview);
+            if (target) target.src = localVal;
+            if (preview) preview.src = localVal;
+          }
+        });
       }
     }
   } catch (e) {
-    // Offline or static fallback
+    // Offline or static
   }
-
-  // Fallback to local storage if available
-  const keys = [
-    { key: "rf_photo_pastor", target: "imgPastor", preview: "previewPastor" },
-    { key: "rf_photo_congregation", target: "imgCongregation", preview: "previewCongregation" },
-    { key: "rf_photo_youth", target: "imgYouth", preview: "previewYouth" },
-    { key: "rf_photo_damas", target: "imgDamas", preview: "previewDamas" }
-  ];
-
-  keys.forEach(item => {
-    const stored = localStorage.getItem(item.key);
-    if (stored) {
-      const target = document.getElementById(item.target);
-      const preview = document.getElementById(item.preview);
-      if (target) target.src = stored;
-      if (preview) preview.src = stored;
-    }
-  });
 }
 
 // Initialize immediately on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
   const initialLang = detectSystemLanguage();
   setLang(initialLang);
+  
+  // 1. Apply local stored photos immediately so there is never a flash or overwrite
+  applyLocalPhotos();
+
+  // 2. Check live cloud database in background
   syncDatabasePhotos();
 
   // Setup click listeners for language buttons
